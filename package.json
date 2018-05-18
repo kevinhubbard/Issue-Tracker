@@ -1,0 +1,31 @@
+{
+  "name": "issue-tracker",
+  "version": "1.0.0",
+  "description": "Issue tracker for projects.",
+  "main": "server.js",
+  "scripts": {
+    "compile": "babel src --presets react --out-dir static",
+    "watch": "babel src --presets react --out-dir static -watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kevinhubbard/Issue-Tracker.git"
+  },
+  "keywords": [
+    "react"
+  ],
+  "author": "Kevin H",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kevinhubbard/Issue-Tracker/issues"
+  },
+  "homepage": "https://github.com/kevinhubbard/Issue-Tracker#readme",
+  "dependencies": {
+    "express": "^4.16.3"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-react": "^6.24.1"
+  }
+}
