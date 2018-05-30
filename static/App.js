@@ -40,7 +40,7 @@ var IssueRow = function IssueRow(props) {
 		React.createElement(
 			'td',
 			null,
-			props.issue.id
+			props.issue._id
 		),
 		React.createElement(
 			'td',
@@ -70,14 +70,14 @@ var IssueRow = function IssueRow(props) {
 		React.createElement(
 			'td',
 			null,
-			props.issue.completedDate ? props.issue.completedDate.toDateString() : ''
+			props.issue.completionDate ? props.issue.completionDate.toDateString() : ''
 		)
 	);
 };
 
 function IssueTable(props) {
 	var issueRows = props.issues.map(function (issue) {
-		return React.createElement(IssueRow, { key: issue.id, issue: issue });
+		return React.createElement(IssueRow, { key: issue._id, issue: issue });
 	});
 
 	return React.createElement(
@@ -184,16 +184,6 @@ var IssueAdd = function (_React$Component2) {
 	return IssueAdd;
 }(React.Component);
 
-var issues = [{
-	id: 1, status: 'Open', owner: 'Kevin',
-	created: new Date('2018-05-18'), effort: 5, completedDate: undefined,
-	title: 'Error when clicking add in console.'
-}, {
-	id: 2, status: 'Open', owner: 'Hubbs',
-	created: new Date('2018-05-18'), effort: 1, completedDate: new Date('2018-05-18'),
-	title: 'Missing bottom border.'
-}];
-
 var IssueList = function (_React$Component3) {
 	_inherits(IssueList, _React$Component3);
 
@@ -218,17 +208,50 @@ var IssueList = function (_React$Component3) {
 		value: function loadData() {
 			var _this4 = this;
 
-			setTimeout(function () {
-				_this4.setState({ issues: issues });
-			}, 500);
+			fetch('/api/issues').then(function (response) {
+				if (response.ok) {
+					response.json().then(function (data) {
+						console.log("The total amount of records:", data._metadata.total_count);
+						data.records.forEach(function (issue) {
+							issue.created = new Date(issue.created);
+							if (issue.completionDate) issue.completionDate = new Date(issue.completionDate);
+						});
+						_this4.setState({ issues: data.records });
+					});
+				} else {
+					response.json().then(function (error) {
+						alert('Failed to fetch issues.' + error.message);
+					});
+				}
+			}).catch(function (err) {
+				alert('Error in fetching data from server.', err);
+			});
 		}
 	}, {
 		key: 'createIssue',
 		value: function createIssue(newIssue) {
-			var newIssues = this.state.issues.slice();
-			newIssue.id = this.state.issues.length + 1;
-			newIssues.push(newIssue);
-			this.setState({ issues: newIssues });
+			var _this5 = this;
+
+			fetch('/api/issues', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(newIssue)
+			}).then(function (response) {
+				if (response.ok) {
+					response.json().then(function (updatedIssue) {
+						updatedIssue.created = new Date(updatedIssue.created);
+						if (updatedIssue.completionDate) updatedIssue.completionDate = new Date(updatedIssue.completionDate);
+						var newIssues = _this5.state.issues.concat(updatedIssue);
+						_this5.setState({ issues: newIssues });
+					});
+				} else {
+					res.json().then(function (err) {
+						alert("Failed to add issue: " + error.message);
+					});
+				}
+			}).catch(function (err) {
+				alert('Error in sending data to server ' + err.message);
+			});
 		}
 	}, {
 		key: 'render',

@@ -24,7 +24,8 @@
   "homepage": "https://github.com/kevinhubbard/Issue-Tracker#readme",
   "dependencies": {
     "body-parser": "^1.18.3",
-    "express": "^4.16.3"
+    "express": "^4.16.3",
+    "mongodb": "^2.2.6"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

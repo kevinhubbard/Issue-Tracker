@@ -10,18 +10,18 @@ class IssueFilter extends React.Component{
 
 const IssueRow = (props) => (
 	<tr>
-		<td>{props.issue.id}</td>
+		<td>{props.issue._id}</td>
 		<td>{props.issue.status}</td>
 		<td>{props.issue.owner}</td>
 		<td>{props.issue.created.toDateString()}</td>
 		<td>{props.issue.title}</td>
 		<td>{props.issue.effort}</td>
-		<td>{props.issue.completedDate ? props.issue.completedDate.toDateString() : ''}</td>
+		<td>{props.issue.completionDate ? props.issue.completionDate.toDateString() : ''}</td>
 	</tr>
 	)
 
 function IssueTable(props) {
-	const issueRows = props.issues.map(issue => <IssueRow key={issue.id} issue={issue} />);
+	const issueRows = props.issues.map(issue => <IssueRow key={issue._id} issue={issue} />);
 
 	return(
 				<table className='bordered-table'>
@@ -75,19 +75,6 @@ class IssueAdd extends React.Component{
 	}
 }
 
-const issues = [
-	{
-		id: 1, status: 'Open', owner: 'Kevin',
-		created: new Date('2018-05-18'), effort: 5, completedDate: undefined,
-		title: 'Error when clicking add in console.'
-	},
-	{
-		id: 2, status: 'Open', owner: 'Hubbs',
-		created: new Date('2018-05-18'), effort: 1, completedDate: new Date('2018-05-18'),
-		title: 'Missing bottom border.'
-	},
-];
-
 class IssueList extends React.Component {
 	constructor() {
 		super();
@@ -101,14 +88,50 @@ class IssueList extends React.Component {
 	}
 
 	loadData(){
-		setTimeout(() => {this.setState({issues: issues})}, 500);
+		fetch('/api/issues').then(response => {
+			if(response.ok) {
+				response.json().then(data => {
+					console.log("The total amount of records:", data._metadata.total_count);
+					data.records.forEach(issue => {
+						issue.created = new Date(issue.created);
+						if(issue.completionDate)
+						issue.completionDate = new Date(issue.completionDate);
+					});
+				this.setState({issues: data.records});
+				});
+			} else {
+			response.json().then(error => {
+				alert('Failed to fetch issues.' + error.message)
+			});
+			}
+		}).catch(err => {
+		alert('Error in fetching data from server.', err);
+	});
 	}
 
 	createIssue(newIssue){
-		const newIssues = this.state.issues.slice();
-		newIssue.id = this.state.issues.length + 1;
-		newIssues.push(newIssue);
-		this.setState({issues: newIssues});
+		fetch('/api/issues', {
+			method: 'POST',
+			headers: {'Content-Type': 'application/json'},
+			body: JSON.stringify(newIssue),
+		}).then(response => {
+			if(response.ok) {
+				response.json().then(updatedIssue => {
+					updatedIssue.created = new Date(updatedIssue.created);
+					if(updatedIssue.completionDate)
+						updatedIssue.completionDate = new Date(updatedIssue.completionDate);
+					const newIssues = this.state.issues.concat(updatedIssue);
+					this.setState({issues: newIssues});
+			});
+		} else {
+			res.json().then(err => {
+				alert("Failed to add issue: " + error.message)
+			});
+		}
+		
+		}).catch(err => {
+			alert('Error in sending data to server ' + err.message);
+		});
 	}
 
 	
